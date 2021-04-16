@@ -40,20 +40,20 @@ export default {
             operator:null,
             isOperatorClicked:false,
             total:'',
-            isOperateFinished:false,
-            isNumberTyped:false,
             start: 0,
         }
     },
 
     methods: {
 
+        //초기화 함수
         clear() {
             this.current = '';
             this.total = '';
             this.start = 0;
         },
 
+        //부호 설정 함수
         sign() {
             if(this.current.charAt(0) === '-') {
                 this.current = this.current.slice(1);
@@ -65,6 +65,7 @@ export default {
             }
         },
 
+        //소수점 설정 함수
         dot() {
             if(this.current.indexOf('.') === -1) {
                 this.current = `${this.current}.`;
@@ -72,21 +73,17 @@ export default {
             
         },
 
+        //DEL 기능 함수
         remove() {
             this.current = this.current.slice(0,-1);
 
         },
 
-        addNumber() {
-            if(this.start == 1 || this.isOperatorClicked) {
-                this.total += this.current;
-                this.total += " ";
-            }
-        },
-
+        //연산자 입력 함수
+        //숫자 입력 시 부호가 변경 될 수 있고, 정수가 아닌 실수가 될 수 있기 때문에
+        //다음 연산자가 입력되면 current 변수에 저장된 숫자를 total 식에 저장
         operators(op) {
-            
-            this.total += this.current + " "; 
+            this.total += this.current + " ";  // 입력된 숫자 total식에 붙이기
             var lastWord = this.total.charAt(this.total.length - 2);
             if(lastWord === "+" || lastWord === "-" || lastWord === "*" || lastWord === "/") { // 연산자 뒤에 바로 연산자 입력 안되게
                 console.log("No Operator");
@@ -99,6 +96,7 @@ export default {
             
         },
 
+        // 숫자 버튼 클릭 시 숫자 값 입력 함수
         getNumber(num) {
             if(this.isOperatorClicked) {
                 this.current = num + '';
@@ -106,9 +104,9 @@ export default {
                 console.log(this.total);
                 
                 this.isOperatorClicked = false;
-                this.isNumberTyped = true;
+                
             }else{
-                this.current = `${this.current}${num}`; // 숫자 이어서 붙이기
+                this.current = `${this.current}${num}`; // 숫자 이어서 붙이기(두 자리 이상 수 입력 위해)
                 
                 this.start++;
                 
@@ -116,23 +114,27 @@ export default {
             
         },
 
+        //연산자 "=" 입력 처리 함수
         equal() {
 
             console.log("  ");
             console.log(this.total);
             this.total += this.current;
-            this.total += " =";
+            this.total += " ="; // 전체 수식 완성
+
             console.log("@@@@@" + this.total);
             
-            var after = this.toPostfix(this.total);
-            this.current = after;
             
-            this.total = '';
+            var after = this.toPostfix(this.total);//완성된 식을 가지고 스택 이용해 계산
+            this.current = after;                   // 계산 결과 보이게
+            
+            this.total = ''; // 전체 수식 변수 초기화
         },
 
+        // 우선순위 고려하여 스택 이용해 계산
         toPostfix : (total) => {
             const before = total;
-            const arrayInfix = before.split(' ');
+            const arrayInfix = before.split(' '); // 공백을 기준으로 연산자와 비연산자 구분하여 split
 
             const operatorStack = new Stack();
             const numberStack = new Stack();
@@ -140,7 +142,7 @@ export default {
             for(let i=0;i<arrayInfix.length;i++) {
                 console.log("%%%%%" + " " + arrayInfix[i]);
 
-                if(isNaN(arrayInfix[i])) {
+                if(isNaN(arrayInfix[i])) { // 연산자인 경우
                     switch(arrayInfix[i]) {
                         case "+": case "-": case "*": case "/":
                             if(!operatorStack.isEmpty() && (operatorStack.prec(arrayInfix[i]) <= operatorStack.prec(operatorStack.top()))) {
@@ -177,7 +179,7 @@ export default {
                             
                     }
 
-                }else {
+                }else { // 비연산자인 경우
                     let n = parseFloat(arrayInfix[i]);
                     console.log("n " + n);
                     numberStack.push(n);
